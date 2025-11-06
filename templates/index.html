@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фронт для API книг</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        button { background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #218838; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f8f9fa; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 5px 0; padding: 8px; background: white; border-radius: 3px; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Библиотека 📚</h1>
+    <p>Загружаем книги с <a href="http://127.0.0.1:8000/docs#/">API</a></p>
+
+    <button onclick="loadBooks()">Загрузить список книг</button>
+    <div id="result"></div>
+
+    <script>
+        async function loadBooks() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Загружаем...</p>';
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/books');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const books = await response.json();
+                if (books && books.length > 0) {
+                    resultDiv.innerHTML = `<h3>Найдено книг: ${books.length}</h3><ul>${books.map(book =>
+                        `<li><strong>${book.title || 'Без названия'}</strong> - ${book.author || 'Автор неизвестен'}</li>`
+                    ).join('')}</ul>`;
+                } else {
+                    resultDiv.innerHTML = '<p>Книг пока нет в базе 😔</p>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Ошибка: ${error.message}. Проверь, запущен ли бэкенд!</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

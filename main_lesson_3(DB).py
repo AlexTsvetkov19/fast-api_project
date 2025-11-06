@@ -60,5 +60,5 @@ async def get_books(session: SessionDep):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000,reload=True)
+    uvicorn.run("main_lesson_3(DB):app", host="0.0.0.0", port=8000,reload=True)
 

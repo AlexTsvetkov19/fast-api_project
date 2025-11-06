@@ -6,7 +6,7 @@
     </root>
     <schema id="2" parent="1" name="main">
       <Current>1</Current>
-      <LastIntrospectionLocalTimestamp>2025-11-05.07:57:19</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-11-06.05:43:48</LastIntrospectionLocalTimestamp>
     </schema>
     <table id="3" parent="2" name="books"/>
     <table id="4" parent="2" name="sqlite_master">
