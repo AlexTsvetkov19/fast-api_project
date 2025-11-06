@@ -1,36 +1,77 @@
 import uvicorn
-from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
-
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 app = FastAPI()
 
-@app.post("/files")
-async def upload_file(uploaded_file: UploadFile):
-    file = uploaded_file.file
-    filename = uploaded_file.filename
-    with open(filename, "wb") as f:
-        f.write(file.read())
+books = [
+    {
+        "id": 1,
+        "title": "Асинхронность в Python",
+        "author": "Alexey",
+    },
+    {
+        "id": 2,
+        "title": "Backend разработка в Python",
+        "author": "Alex",
+    },
+]
 
-@app.post("/multiple_files")
-async def upload_file(uploaded_files: list[UploadFile]):
-    for uploaded_file in uploaded_files:
-        file = uploaded_file.file
-        filename = uploaded_file.filename
-        with open(f"1_{filename}", "wb") as f:
-            f.write(file.read())
+users = []
 
-@app.get("/files/{filename}")
-async def get_file(filename: str):
-    return FileResponse(filename)
+class NewBook(BaseModel):
+    title: str
+    author: str
 
-def iterfile(filename: str):
-    with open(filename, "rb") as f:
-        while chunk := f.read(1024*1024):
-            yield chunk
+class UserSchema(BaseModel):
+    email: EmailStr
+    bio: str = Field(max_length=10)
+    age: int = Field(gt=0, le=130)
 
-@app.get("/files/streaming/{filename}")
-async def get_streaming_file(filename: str):
-    return StreamingResponse(iterfile(filename), media_type="video/mp4")
+    model_config = ConfigDict(extra='forbid')
+
+@app.get(
+    "/books",
+    summary="Получить все книги",
+    tags=["Книги 📚"])
+async def read_books():
+    return books
+
+@app.get(
+    "/books/{id}",
+    summary="Получить книгу",
+    tags=["Книги 📚"])
+async def get_book(id: int):
+    for book in books:
+        if book["id"] == id:
+            return book
+
+    raise HTTPException(status_code=404, detail="Book not found")
+
+
+
+@app.post(
+    "/users",
+    tags=["Пользователи 👨‍👨"])
+async def create_user(user: UserSchema):
+    users.append(user)
+    return {"success": True, "message": "User created"}
+
+@app.get(
+    "/users",
+    tags=["Пользователи 👨‍👨"])
+async def get_users() -> list[UserSchema]:
+    return users
+
+@app.post(
+    "/books",
+    tags=["Книги 📚"])
+async def create_book(new_book: NewBook):
+    books.append({
+        "id": len(books) + 1,
+        "title": new_book.title,
+        "author": new_book.author,
+    })
+    return {"success": True, "message": "Книга успешно добавлена"}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000,reload=True)
